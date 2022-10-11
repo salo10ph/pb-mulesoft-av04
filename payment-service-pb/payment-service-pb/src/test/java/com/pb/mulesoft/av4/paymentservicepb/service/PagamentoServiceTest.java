@@ -1,0 +1,69 @@
+package com.pb.mulesoft.av4.paymentservicepb.service;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.pb.mulesoft.av4.paymentservicepb.http.PedidoClient;
+import com.pb.mulesoft.av4.paymentservicepb.model.Pagamento;
+import com.pb.mulesoft.av4.paymentservicepb.model.Status;
+import com.pb.mulesoft.av4.paymentservicepb.repository.PagamentoRepository;
+
+class PagamentoServiceTest {
+
+	private PagamentoService service;
+	
+	@Mock
+	private PagamentoRepository repository;
+
+	@Mock
+    private ModelMapper modelMapper;
+    
+	@Mock
+	private PedidoClient pedido;
+    
+	@BeforeEach
+	public void antesDeCada() {
+		MockitoAnnotations.initMocks(this);
+		this.service = new PagamentoService(repository, modelMapper, pedido);
+	}
+	
+/*	@Test
+	void DeveriaDevolverALista() {
+		Pageable paginacao = null;
+		Page<PagamentoDto2> = service.listar(paginacao);
+		
+	}
+	*/
+	
+	@Test
+	void DeveriaInserirUmPedidoNoBanco() {
+		
+	}
+	
+	private List<Pagamento> pedidos(){
+		List<Pagamento> lista = new ArrayList<>();
+		
+		Pagamento pagamento1 = new Pagamento(1L, new BigDecimal("123.54"), "35a06b4f-58d3-4d1b-8d5f-2c11e8bc6671", Status.APPROVED, "Aprovado");
+		lista.add(pagamento1);
+		
+		Pagamento pagamento2 = new Pagamento(2L, new BigDecimal("1000.00"), "35a06b4f-58d3-4d1b-8d5f-2c11e8bc6671", Status.REPROVED, "Confirmado");
+		lista.add(pagamento2);
+		
+		Pagamento pagamento3 = new Pagamento(3L, new BigDecimal("100.5"), "35a06b4f-58d3-4d1b-8d5f-2c11e8bc6671", Status.APPROVED, "Aprovado");
+		lista.add(pagamento3);
+		
+		return lista;
+	}
+
+}

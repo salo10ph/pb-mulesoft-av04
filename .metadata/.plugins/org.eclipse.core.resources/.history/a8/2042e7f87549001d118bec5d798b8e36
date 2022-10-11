@@ -1,0 +1,14 @@
+package com.pb.mulesoft.av4.paymentservicepb.service;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
+class PagamentoServiceTest {
+
+	@Test
+	void test() {
+		fail("Not yet implemented");
+	}
+
+}

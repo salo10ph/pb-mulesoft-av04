@@ -1,0 +1,99 @@
+package com.pb.mulesoft.av4.paymentservicepb.service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.pb.mulesoft.av4.paymentservicepb.dto.AutenticarDto;
+import com.pb.mulesoft.av4.paymentservicepb.dto.PagamentoDto;
+import com.pb.mulesoft.av4.paymentservicepb.form.AutenticarForm;
+import com.pb.mulesoft.av4.paymentservicepb.form.PagamentoForm;
+import com.pb.mulesoft.av4.paymentservicepb.form.SolicitacaoDePagamentoForm;
+import com.pb.mulesoft.av4.paymentservicepb.http.PedidoClient;
+import com.pb.mulesoft.av4.paymentservicepb.model.Cartao;
+import com.pb.mulesoft.av4.paymentservicepb.model.Cliente;
+import com.pb.mulesoft.av4.paymentservicepb.model.Item;
+import com.pb.mulesoft.av4.paymentservicepb.model.Moeda;
+import com.pb.mulesoft.av4.paymentservicepb.model.Pagamento;
+import com.pb.mulesoft.av4.paymentservicepb.model.TipoDeDocumento;
+import com.pb.mulesoft.av4.paymentservicepb.model.TipoDePagamento;
+import com.pb.mulesoft.av4.paymentservicepb.repository.PagamentoRepository;
+
+import com.pb.mulesoft.av4.paymentservicepb.dto.SolicitacaoDePagamentoDto;
+
+@Service
+public class PagamentoService {
+
+    private PagamentoRepository repository;
+    private ModelMapper modelMapper;
+    private PedidoClient pedido;
+
+    @Autowired
+    public PagamentoService(PagamentoRepository repository, ModelMapper modelMapper, PedidoClient pedido) {
+		this.repository = repository;
+		this.modelMapper = modelMapper;
+		this.pedido = pedido;
+	}
+
+	private static String tokenAtivo;
+    private static Long duracaoDoToken = -1L;
+    private static LocalDateTime horaDaAtivacaoDoToken = LocalDateTime.now().plusHours(duracaoDoToken);
+    
+    public Page<PagamentoDto> listar(Pageable paginacao){
+		return repository
+				.findAll(paginacao)
+				.map(p -> modelMapper.map(p, PagamentoDto.class));
+	}
+
+    public PagamentoDto detalhar(Long id) {
+		Pagamento pagamento = repository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException());
+		return modelMapper.map(pagamento, PagamentoDto.class);
+	}
+
+    public PagamentoDto criar(@Valid PagamentoForm form) {
+    	if(LocalDateTime.now().isAfter(horaDaAtivacaoDoToken.plusSeconds(duracaoDoToken))) {
+    		AutenticarForm auth = new AutenticarForm("client_id_mulesoft", "91452c37-e343-4738-a94a-be113875cb2b");
+    		AutenticarDto autenticacao = pedido.autenticar(auth);
+					
+			tokenAtivo = autenticacao.getToken_type() + " " + autenticacao.getAccess_token();
+	    	duracaoDoToken = autenticacao.getExpires_in();
+	    	horaDaAtivacaoDoToken = LocalDateTime.now();
+		}
+
+		System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    	String token = tokenAtivo;
+		
+		BigDecimal total = new BigDecimal("0");
+		for(Item x : form.getItems()) {
+			total = total.add(x.getValue().multiply(new BigDecimal(x.getQty())));
+		}
+		total = total.add(form.getShipping());
+		total = total.subtract(form.getDiscount());
+		
+		String sellerId = "6eb2412c-165a-41cd-b1d9-76c575d70a28";
+		Cliente cliente = new Cliente(TipoDeDocumento.CPF, form.getCpf());
+		TipoDePagamento tipoDePagamento = form.getPayment_type();
+		Moeda moeda = form.getCurrency_type();
+		Cartao cartao = form.getPayment();
+		cartao.setNumber_token(form.getPayment().getNumber_token());
+		
+		SolicitacaoDePagamentoForm solicitacaoDePagamentoForm = new SolicitacaoDePagamentoForm(sellerId, cliente, tipoDePagamento, moeda, total, cartao);
+		SolicitacaoDePagamentoDto solicitacaoDePagamentoDto = pedido.solicitarPagamento(token, solicitacaoDePagamentoForm);
+				
+		Pagamento pagamento = new Pagamento(total, solicitacaoDePagamentoDto.getPayment_id(),solicitacaoDePagamentoDto.getStatus(), solicitacaoDePagamentoDto.getAuthorization().getReason_message());
+		
+		Pagamento salvo = repository.save(pagamento);
+		return new PagamentoDto(salvo.getOrder_id(), salvo.getTotal(), salvo.getPayment_id(), salvo.getPayment_status(), salvo.getMessage());
+		
+	}
+
+}

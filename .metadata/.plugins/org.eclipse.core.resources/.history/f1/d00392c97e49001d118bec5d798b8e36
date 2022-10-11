@@ -1,0 +1,19 @@
+package com.pb.mulesoft.av4.paymentservicepb.service;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.pb.mulesoft.av4.paymentservicepb.dto.PagamentoDto2;
+
+class PagamentoServiceTest {
+
+	@Test
+	void DeveriaDevolverOPedidoDeNumero1() {
+		Pageable paginacao;
+		Page<PagamentoDto2> = listar(paginacao);
+	}
+
+}

@@ -1,0 +1,47 @@
+package com.pb.mulesoft.av4.paymentservicepb.model;
+
+import java.math.BigDecimal;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+
+import com.pb.mulesoft.av4.paymentservicepb.model.Pagamento;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "pagamentos")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Pagamento {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long pedido;
+	
+	@NotNull
+	@PositiveOrZero
+	private BigDecimal total;
+	
+	@NotBlank
+	private String id_pagamento;
+	
+	@NotNull
+	@Enumerated(EnumType.STRING)
+	private Status status;
+	
+	@NotBlank
+	private String mensagem;
+
+	public Pagamento(@NotNull @PositiveOrZero BigDecimal total, @NotBlank String id_pagamento, @NotNull Status status, @NotBlank String mensagem) {
+		this.total = total;
+		this.status = status;
+		this.mensagem = mensagem;
+		this.id_pagamento = id_pagamento;
+	}
+}

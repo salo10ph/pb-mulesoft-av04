@@ -1,0 +1,21 @@
+package com.pb.mulesoft.av4.paymentservicepb.dto;
+
+import com.pb.mulesoft.av4.paymentservicepb.model.Status;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class PagamentoDto2 {
+	private Long pedido;
+	private BigDecimal total;
+	private String id_pagamento;
+	private Status status;
+	private String mensagem;
+}

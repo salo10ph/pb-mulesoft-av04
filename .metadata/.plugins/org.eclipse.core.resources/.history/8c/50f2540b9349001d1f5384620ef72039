@@ -1,0 +1,28 @@
+package com.pb.mulesoft.av4.paymentservicepb.form;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import com.pb.mulesoft.av4.paymentservicepb.model.Cartao;
+import com.pb.mulesoft.av4.paymentservicepb.model.Item;
+import com.pb.mulesoft.av4.paymentservicepb.model.Moeda;
+import com.pb.mulesoft.av4.paymentservicepb.model.TipoDePagamento;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class PagamentoForm {
+
+
+	private String card_number;
+	private String cpf;
+	private List<Item> items;
+	private BigDecimal shipping;
+	private BigDecimal discount;
+	private TipoDePagamento payment_type;
+	private Moeda currency_type;
+	private Cartao payment;
+	
+}
